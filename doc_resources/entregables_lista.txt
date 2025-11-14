@@ -1,0 +1,22 @@
+TP_BASE_DE_DATOS/
+- README.md
+- scripts/
+  - E1_creacion_modelo.sql
+  - E2_carga_masiva_indice_mediciones.sql
+  - E2_vistas_testing.sql
+  - E3_consultas_vistas.sql
+  - E4_seguridad.sql
+  - E5_concurrencia_transacciones.sql
+- java/
+  - ConcurrenciaDemo.java
+  - PreparedStatementsDemo.java
+  - SimpleConnection.java
+  - TransaccionesDemo.java
+- doc_resources/
+  - DER.png
+  - ENTREGABLES_ETAPA4.md
+  - evidencia_check_errores.png
+  - evidencias_rendimiento.md
+  - evidencia_uso_ia.md
+  - ejemplo_entrega_final.txt
+  - mermaid_DER.txt
