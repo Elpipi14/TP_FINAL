@@ -54,47 +54,90 @@ La aplicación Java reside en `java/src/main/java` y sigue una arquitectura por 
 - Cliente de línea de comandos para `javac`, `java` y `mysql`.
 
 ## 5. Guía paso a paso para reproducir la aplicación
-### 5.1 Preparar la base de datos
+### 🧰 5.0 Preparar el entorno con Maven (macOS y Windows)
+El proyecto puede ejecutarse directamente con **Apache Maven**, lo que simplifica la compilación, ejecución y gestión del driver JDBC de MySQL.
+
+## 5.0.1 Instalación de Maven
+### 🪟 En Windows
+1. Descargar Maven desde:  
+   https://maven.apache.org/download.cgi  
+   Elegir *Binary zip archive*.
+2. Descomprimir en:  
+   `C:\Program Files\Apache\maven`
+3. Configurar variables de entorno:
+   - **MAVEN_HOME** ⇒ `C:\Program Files\Apache\maven`
+   - Agregar al **PATH**:  
+     `C:\Program Files\Apache\maven\bin`
+4. Verificar instalación:
+   ```
+   mvn -v
+   ```
+### 🍎 En macOS
+1. Verificar Homebrew:
+   ```
+   brew --version
+   ```
+   Si no está instalado:
+   ```
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+2. Instalar Maven:
+   ```
+   brew install maven
+   ```
+3. Verificar:
+   ```
+   mvn -v
+   ```
+---
+   
+## 5.1 Preparar la base de datos
 1. Crear la base y todas las tablas requeridas:
-   ```bash
+   ```
    mysql -u root -p < scripts/schema.sql
    ```
-2. Insertar los datos de ejemplo (puede ejecutarse múltiples veces sin duplicados):
-   ```bash
+2. Insertar datos de ejemplo:
+   ```
    mysql -u root -p < scripts/sample_data.sql
    ```
+3. Verificar registros:
+   ```
+   USE producto_barras;
+   SELECT COUNT(*) FROM producto;
+   ```
 3. (Opcional) Crear un usuario dedicado ejecutando `scripts/E4_seguridad.sql` y ajustar los permisos necesarios.
+---
 
-### 5.2 Configurar las credenciales de conexión
-`DatabaseConnection` utiliza `java/src/main/resources/database.properties`. Actualice el archivo o sobrescriba las claves mediante variables/propiedades antes de ejecutar la app:
+## 5.2 Configurar las credenciales de conexión
+El archivo está en:  
+`src/main/resources/database.properties`
 
-```properties
-jdbc.url=jdbc:mysql://localhost:3306/producto_barras
-jdbc.user=app_user
-jdbc.password=TPIntegrador2025!
+Ejemplo:
+```
+jdbc.url=jdbc:mysql://localhost:3306/producto_barras?serverTimezone=America/Argentina/Cordoba&useSSL=false&allowPublicKeyRetrieval=true
+jdbc.user=root
+jdbc.password=***
 jdbc.driverClassName=com.mysql.cj.jdbc.Driver
 ```
 
-Orden de precedencia (de menor a mayor):
-1. Archivo definido por `-Ddb.properties=<archivo>` o `DB_PROPERTIES`.
-2. Overrides individuales (`-Ddb.jdbc.url=...`, `DB_JDBC_URL=...`, etc.).
-3. Valores del archivo `database.properties` incluido en el repositorio.
+---
 
-Si sus credenciales difieren, actualice el archivo o utilice overrides antes de compilar/ejecutar.
+## 5.3 Compilar y ejecutar con Maven
+```
+mvn -q -DskipTests compile
+mvn -q -DskipTests exec:java
+```
 
-### 5.3 Compilar la aplicación
-```bash
-cd java
-find src/main/java -name "*.java" > sources.list
-mkdir -p out
-javac -d out @sources.list
+---
+
+## 5.4 Ejecutar sin Maven (opcional)
+```
+javac -cp "lib/mysql-connector-j-9.0.0.jar" -d out $(find src/main/java -name "*.java")
 cp -R src/main/resources/* out/
+java -cp "out:lib/mysql-connector-j-9.0.0.jar" main.AppMenu
 ```
 
-### 5.4 Ejecutar el menú de consola
-```bash
-java -cp out main.AppMenu
-```
+---
 
 Notas:
 - El menú imprime las opciones disponibles y continúa hasta que el usuario elige `0` (salir).
@@ -135,24 +178,53 @@ Enlace al video (10–15 minutos) que presenta al equipo, explica la arquitectur
 Cada opción delega en `ProductoService` o `CodigoBarrasService`, que validan datos, orquestan transacciones (`commit`/`rollback`) y preservan la unicidad de la relación 1→1.
 
 ## 10. Estructura del repositorio
+
+La aplicación sigue una arquitectura por capas, con una organización clara y mantenible.  
+La estructura del proyecto es la siguiente:
+
 ```
-.
-├── README.md
-├── java/
-│   ├── src/main/java/
-│   │   ├── config/
-│   │   ├── dao/
-│   │   ├── dto/
-│   │   ├── entities/
-│   │   ├── main/
-│   │   ├── service/
-│   │   └── util/
-│   └── src/main/resources/
-├── scripts/
-│   ├── schema.sql
-│   ├── sample_data.sql
-│   └── E1_... E5_...
-└── doc_resources/
+📁 **java/**
+   └── 📁 **src/main/java/**
+       ├── 📁 **config/**  
+       │     Contiene la clase de conexión JDBC (`DatabaseConnection`),  
+       │     encargada de leer `database.properties` y proveer `Connection`.
+       │
+       ├── 📁 **dao/**  
+       │     Acceso a datos mediante JDBC.  
+       │     Implementa CRUD con `PreparedStatement` y mapeo a entidades.
+       │
+       ├── 📁 **dto/**  
+       │     Objetos de transferencia (request/response) usados por los services.
+       │
+       ├── 📁 **entities/**  
+       │     Modelos del dominio: `Producto`, `CodigoBarras`, etc.  
+       │     Aquí se refleja la relación 1→1 entre entidades.
+       │
+       ├── 📁 **main/**  
+       │     Contiene `AppMenu` y la clase principal `Main`.  
+       │     Gestiona la interfaz de consola y el flujo de uso.
+       │
+       ├── 📁 **service/**  
+       │     Lógica de negocio.  
+       │     Orquesta transacciones (`commit`/`rollback`) y garantiza 1→1.
+       │
+       └── 📁 **util/**  
+             Funciones auxiliares: validaciones, formatos, helpers.
+
+📁 **src/main/resources/**  
+   Archivos de configuración, principalmente:  
+   - `database.properties` → credenciales y URL de conexión JDBC.
+
+📁 **scripts/**  
+   ├── `schema.sql` → creación de tablas, claves foráneas y constraints.  
+   ├── `sample_data.sql` → datos iniciales para pruebas.  
+   └── Otros scripts (E1...E5) usados para carga masiva o validaciones.
+
+📁 **doc_resources/**  
+   Diagramas UML, capturas, documentación complementaria para la entrega.
+
+📄 **README.md**  
+   Documentación principal del proyecto.
 ```
 
 ## 11. Próximos pasos sugeridos
