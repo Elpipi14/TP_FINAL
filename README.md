@@ -2,7 +2,7 @@
 
 ## 1. Descripción general
 
-Este repositorio contiene la segunda parte del Trabajo Final Integrador para **Programación II** y **Bases de Datos I**. Se desarrolló una aplicación Java (JDK 17+) que gestiona un catálogo de **productos** y sus **códigos de barras**, vinculados mediante una relación **1→1 unidireccional**: la clase `Producto` mantiene una referencia obligatoria a `CodigoBarras`, mientras que `CodigoBarras` desconoce a su propietario. La solución emplea **JDBC sin ORM**, respeta el patrón **DAO + Service** y expone un **menú de consola** con operaciones CRUD envueltas en transacciones que ejecutan `commit` o `rollback` según el resultado.
+Este repositorio contiene la segunda parte del Trabajo Final Integrador para **Programación II**. Se desarrolló una aplicación Java (JDK 17+) que gestiona un catálogo de **productos** y sus **códigos de barras**, vinculados mediante una relación **1→1 unidireccional**: la clase `Producto` mantiene una referencia obligatoria a `CodigoBarras`, mientras que `CodigoBarras` desconoce a su propietario. La solución emplea **JDBC sin ORM**, respeta el patrón **DAO + Service** y expone un **menú de consola** con operaciones CRUD envueltas en transacciones que ejecutan `commit` o `rollback` según el resultado.
 
 ## 2. Cumplimiento detallado de las consignas
 
@@ -170,11 +170,9 @@ Notas:
 
 ## 6. Diagrama UML
 
-- El diagrama de clases que refleja la relación 1→1 (paquetes, atributos, métodos y dependencias) se integrará aquí:
+- El diagrama de clases que refleja la relación 1→1 (paquetes, atributos, métodos y dependencias):
 
-  ![Diagrama UML Producto → CodigoBarras](doc_resources/uml_relacion_producto_codigo.png)
-
-  > _Pendiente_: subir la imagen final al repositorio.
+  ![Diagrama UML Producto → CodigoBarras](doc_resources/uml_relacion_producto_codigo.jpeg)
 
 ## 7. Video de demostración
 
@@ -206,46 +204,46 @@ La aplicación sigue una arquitectura por capas, con una organización clara y m
 La estructura del proyecto es la siguiente:
 
 ```
-📁 **java/**
-   └── 📁 **src/main/java/**
-       ├── 📁 **config/**
+📁 java/
+   └── 📁 src/main/java/
+       ├── 📁 config/
        │     Contiene la clase de conexión JDBC (`DatabaseConnection`),
        │     encargada de leer `database.properties` y proveer `Connection`.
        │
-       ├── 📁 **dao/**
+       ├── 📁 dao/
        │     Acceso a datos mediante JDBC.
        │     Implementa CRUD con `PreparedStatement` y mapeo a entidades.
        │
-       ├── 📁 **dto/**
+       ├── 📁 dto/
        │     Objetos de transferencia (request/response) usados por los services.
        │
-       ├── 📁 **entities/**
+       ├── 📁 entities/
        │     Modelos del dominio: `Producto`, `CodigoBarras`, etc.
        │     Aquí se refleja la relación 1→1 entre entidades.
        │
-       ├── 📁 **main/**
+       ├── 📁 main/
        │     Contiene `AppMenu` y la clase principal `Main`.
        │     Gestiona la interfaz de consola y el flujo de uso.
        │
-       ├── 📁 **service/**
+       ├── 📁 service/
        │     Lógica de negocio.
        │     Orquesta transacciones (`commit`/`rollback`) y garantiza 1→1.
        │
-       └── 📁 **util/**
+       └── 📁 util/
              Funciones auxiliares: validaciones, formatos, helpers.
 
-📁 **src/main/resources/**
+📁 src/main/resources/
    Archivos de configuración, principalmente:
    - `database.properties` → credenciales y URL de conexión JDBC.
 
-📁 **scripts/**
+📁 scripts/
    ├── `schema.sql` → creación de tablas, claves foráneas y constraints.
    ├── `sample_data.sql` → datos iniciales para pruebas.
    └── Otros scripts (E1...E5) usados para carga masiva o validaciones.
 
-📁 **doc_resources/**
+📁 doc_resources/
    Diagramas UML, capturas, documentación complementaria para la entrega.
 
-📄 **README.md**
+📄 *README.md*
    Documentación principal del proyecto.
 ```
