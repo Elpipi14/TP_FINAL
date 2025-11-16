@@ -59,18 +59,23 @@ public class ProductoService implements GenericService<Producto> {
             Throwable txException = null;
             try {
                 connection.setAutoCommit(false);
+                System.out.println("🔄 [TRANSACCIÓN] Iniciando creación de producto con código de barras...");
                 ensureBarcodeIsUnique(connection, dto.getCodigoBarras(), null);
 
                 Producto producto = buildProductoFromDto(dto);
                 productoDao.save(connection, producto);
+                System.out.println("✓ [TRANSACCIÓN] Producto creado temporalmente (ID: " + producto.getId() + ")");
 
                 CodigoBarras codigoBarras = new CodigoBarras(producto.getId(), dto.getCodigoBarras());
                 codigoBarrasDao.save(connection, codigoBarras);
+                System.out.println("✓ [TRANSACCIÓN] Código de barras creado temporalmente (GTIN: " + dto.getCodigoBarras() + ")");
                 producto.setCodigoBarras(codigoBarras);
 
                 connection.commit();
+                System.out.println("✅ [TRANSACCIÓN] COMMIT realizado con éxito - Datos guardados permanentemente");
                 return producto;
             } catch (Exception e) {
+                System.out.println("❌ [TRANSACCIÓN] ERROR detectado: " + e.getMessage());
                 RuntimeException toThrow = propagateTransactionalException(connection, e, errorMessage);
                 txException = toThrow;
                 throw toThrow;
@@ -119,11 +124,13 @@ public class ProductoService implements GenericService<Producto> {
             Throwable txException = null;
             try {
                 connection.setAutoCommit(false);
+                System.out.println("🔄 [TRANSACCIÓN] Iniciando actualización de producto con código...");
                 Producto producto = productoDao.findById(connection, dto.getIdProducto())
                         .orElseThrow(() -> new ServiceException("Producto inexistente"));
 
                 updateProductoFromDto(producto, dto);
                 productoDao.update(connection, producto);
+                System.out.println("✓ [TRANSACCIÓN] Producto actualizado temporalmente (ID: " + producto.getId() + ")");
 
                 ensureBarcodeIsUnique(connection, dto.getCodigoBarras(), producto.getId());
                 Optional<CodigoBarras> existente = codigoBarrasDao.findByProductoId(connection, producto.getId());
@@ -137,14 +144,18 @@ public class ProductoService implements GenericService<Producto> {
 
                 if (existente.isPresent()) {
                     codigoBarrasDao.update(connection, codigoBarras);
+                    System.out.println("✓ [TRANSACCIÓN] Código de barras actualizado temporalmente");
                 } else {
                     codigoBarrasDao.save(connection, codigoBarras);
+                    System.out.println("✓ [TRANSACCIÓN] Código de barras creado temporalmente");
                 }
                 producto.setCodigoBarras(codigoBarras);
 
                 connection.commit();
+                System.out.println("✅ [TRANSACCIÓN] COMMIT realizado con éxito. Cambios guardados");
                 return producto;
             } catch (Exception e) {
+                System.out.println("❌ [TRANSACCIÓN] ERROR detectado: " + e.getMessage());
                 RuntimeException toThrow = propagateTransactionalException(connection, e, errorMessage);
                 txException = toThrow;
                 throw toThrow;
@@ -247,6 +258,7 @@ public class ProductoService implements GenericService<Producto> {
     private void ensureBarcodeIsUnique(Connection connection, String codigo, Long productoActualId) throws SQLException {
         codigoBarrasDao.findByCodigo(connection, codigo).ifPresent(existing -> {
             if (productoActualId == null || !productoActualId.equals(existing.getProductoId())) {
+                 System.out.println("⛔ [VALIDACIÓN] Código de barras duplicado detectado: " + codigo);
                 throw new ServiceException("El código de barras ya está asociado a otro producto");
             }
         });
@@ -305,7 +317,9 @@ public class ProductoService implements GenericService<Producto> {
     private void rollbackQuietly(Connection connection, Throwable exceptionToAugment) {
         try {
             connection.rollback();
+            System.out.println("⚠️  [TRANSACCIÓN] ROLLBACK ejecutado - Todos los cambios fueron revertidos");
         } catch (SQLException rollbackException) {
+            System.out.println("❌ [TRANSACCIÓN] Error crítico al ejecutar ROLLBACK: " + rollbackException.getMessage());
             if (exceptionToAugment != null) {
                 exceptionToAugment.addSuppressed(rollbackException);
             }
