@@ -1,13 +1,13 @@
 # Trabajo Final Integrador — Gestión de Productos con Código de Barras
 
 ## 1. Descripción general
-Este repositorio contiene la segunda parte del Trabajo Final Integrador para **Programación II** y **Bases de Datos I**. Se desarrolló una aplicación Java (JDK 17+) que gestiona un catálogo de **productos** y sus **códigos de barras**, vinculados mediante una relación **1→1 unidireccional**: la clase `Producto` mantiene una referencia obligatoria a `CodigoBarras`, mientras que `CodigoBarras` desconoce a su propietario. La solución emplea **JDBC sin ORM**, respeta el patrón **DAO + Service** y expone un **menú de consola** con operaciones CRUD envueltas en transacciones que ejecutan `commit` o `rollback` según el resultado.
+Este repositorio contiene la segunda parte del Trabajo Final Integrador para **Programación II**. Se desarrolló una aplicación Java (JDK 17+) que gestiona un catálogo de **productos** y sus **códigos de barras**, vinculados mediante una relación **1→1 unidireccional**: la clase `Producto` mantiene una referencia obligatoria a `CodigoBarras`, mientras que `CodigoBarras` desconoce a su propietario. La solución emplea **JDBC sin ORM**, respeta el patrón **DAO + Service** y expone un **menú de consola** con operaciones CRUD envueltas en transacciones que ejecutan `commit` o `rollback` según el resultado.
 
 ## 2. Cumplimiento detallado de las consignas
 La siguiente sección resume cómo se cubre cada requisito del enunciado, con referencias directas al código fuente y a los recursos incluidos.
 
 ### 2.1 Diseño y UML
-- Se reservaron los archivos de recursos en `doc_resources/`. El diagrama UML se integrará en `doc_resources/uml_relacion_producto_codigo.png` (placeholder) y se vincula en la [Sección 6](#6-diagrama-uml) para incorporarlo apenas se finalice la imagen.
+- Se reservaron los archivos de recursos en `doc_resources/`. El diagrama UML en `doc_resources/uml_relacion_producto_codigo.jpeg` (placeholder) y se vincula en la [Sección 6](#6-diagrama-uml).
 - Las dependencias entre paquetes se reflejan en la estructura bajo `java/src/main/java`, donde cada capa mantiene responsabilidades claras (ver [Sección 3](#3-arquitectura-y-paquetes)).
 
 ### 2.2 Entidades y dominio (A → B)
@@ -35,8 +35,8 @@ La siguiente sección resume cómo se cubre cada requisito del enunciado, con re
 
 ### 2.7 Entregables adicionales
 - Scripts SQL: `schema.sql` + `sample_data.sql` ya disponibles.
-- Video: el enlace público se documenta en la [Sección 7](#7-video-de-demostración) y debe subirse antes de la entrega definitiva.
-- Informe PDF: queda pendiente (ver [Sección 8](#8-pendientes-de-la-entrega)).
+- Video: el enlace público se documenta en la [Sección 7](#7-video-de-demostración).
+- Informe PDF: se encuenta en '/doc_resources'
 
 ## 3. Arquitectura y paquetes
 La aplicación Java reside en `java/src/main/java` y sigue una arquitectura por capas:
@@ -144,23 +144,17 @@ Notas:
 - Para recompilar después de cambios, repita `find` + `javac`. Puede eliminar `sources.list` cuando termine.
 
 ## 6. Diagrama UML
-- El diagrama de clases que refleja la relación 1→1 (paquetes, atributos, métodos y dependencias) se integrará aquí:
+- El diagrama de clases que refleja la relación 1→1 (paquetes, atributos, métodos y dependencias):
 
-  ![Diagrama UML Producto → CodigoBarras](doc_resources/uml_relacion_producto_codigo.png)
+  ![Diagrama UML Producto → CodigoBarras](doc_resources/uml_relacion_producto_codigo.jpeg)
 
-  > _Pendiente_: subir la imagen final al repositorio.
 
 ## 7. Video de demostración
 Enlace al video (10–15 minutos) que presenta al equipo, explica la arquitectura y muestra el flujo CRUD con transacciones:
 
 - **[Agregar URL del video aquí]**
 
-## 8. Pendientes de la entrega
-- Subir el diagrama UML definitivo en `doc_resources/` (ver [Sección 6](#6-diagrama-uml)).
-- Incorporar el informe final en PDF (6–8 páginas) con la documentación solicitada.
-- Actualizar esta sección cuando se completen los ítems anteriores.
-
-## 9. Funcionalidades expuestas por el AppMenu
+## 8. Funcionalidades expuestas por el AppMenu
 `AppMenu` ofrece las siguientes acciones, todas respaldadas por la capa `service` y con manejo robusto de entradas inválidas:
 
 1. Crear producto y código de barras en una única transacción.
@@ -177,57 +171,53 @@ Enlace al video (10–15 minutos) que presenta al equipo, explica la arquitectur
 
 Cada opción delega en `ProductoService` o `CodigoBarrasService`, que validan datos, orquestan transacciones (`commit`/`rollback`) y preservan la unicidad de la relación 1→1.
 
-## 10. Estructura del repositorio
+## 9. Estructura del repositorio
 
 La aplicación sigue una arquitectura por capas, con una organización clara y mantenible.  
 La estructura del proyecto es la siguiente:
 
 ```
-📁 **java/**
-   └── 📁 **src/main/java/**
-       ├── 📁 **config/**  
+📁 java/
+   └── 📁 src/main/java/
+       ├── 📁 config/ 
        │     Contiene la clase de conexión JDBC (`DatabaseConnection`),  
        │     encargada de leer `database.properties` y proveer `Connection`.
        │
-       ├── 📁 **dao/**  
+       ├── 📁 dao/  
        │     Acceso a datos mediante JDBC.  
        │     Implementa CRUD con `PreparedStatement` y mapeo a entidades.
        │
-       ├── 📁 **dto/**  
+       ├── 📁 dto/  
        │     Objetos de transferencia (request/response) usados por los services.
        │
-       ├── 📁 **entities/**  
+       ├── 📁 entities/  
        │     Modelos del dominio: `Producto`, `CodigoBarras`, etc.  
        │     Aquí se refleja la relación 1→1 entre entidades.
        │
-       ├── 📁 **main/**  
+       ├── 📁 main/  
        │     Contiene `AppMenu` y la clase principal `Main`.  
        │     Gestiona la interfaz de consola y el flujo de uso.
        │
-       ├── 📁 **service/**  
+       ├── 📁 service/  
        │     Lógica de negocio.  
        │     Orquesta transacciones (`commit`/`rollback`) y garantiza 1→1.
        │
-       └── 📁 **util/**  
+       └── 📁 util/  
              Funciones auxiliares: validaciones, formatos, helpers.
 
-📁 **src/main/resources/**  
+📁 src/main/resources/  
    Archivos de configuración, principalmente:  
    - `database.properties` → credenciales y URL de conexión JDBC.
 
-📁 **scripts/**  
+📁 scripts/  
    ├── `schema.sql` → creación de tablas, claves foráneas y constraints.  
    ├── `sample_data.sql` → datos iniciales para pruebas.  
    └── Otros scripts (E1...E5) usados para carga masiva o validaciones.
 
-📁 **doc_resources/**  
+📁 doc_resources/  
    Diagramas UML, capturas, documentación complementaria para la entrega.
 
-📄 **README.md**  
+📄 *README.md*  
    Documentación principal del proyecto.
 ```
 
-## 11. Próximos pasos sugeridos
-- Publicar el enlace definitivo al video en la [Sección 7](#7-video-de-demostración).
-- Agregar el diagrama UML y el informe PDF cuando estén terminados.
-- (Opcional) Automatizar la compilación con Maven/Gradle y añadir pruebas unitarias para servicios/DAOs.
